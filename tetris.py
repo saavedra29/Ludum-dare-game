@@ -45,7 +45,7 @@ NORMAL_GAME = 1
 PAUSED_GAME = 2
 CHANGE_SPEED_GAME = 3
 isPaused = False
-SIZE_STATE = 1
+SIZE_STATE = 2
 
 # Levels
 LEVEL_0_DELAY = 1000 # inital delay between steps
@@ -68,9 +68,6 @@ class Application(tk.Tk):
         self.draw_grid()
         self.create_events()
         self.tetrominos = self.get_tetrominos()
-        ptype((self.tetrominos, 'tetrominos'))
-        for i in self.tetrominos:
-            print(i)
         self.board = None
         self.board = self.get_init_board()
         self.next = copy.deepcopy(random.choice(self.tetrominos))
@@ -174,12 +171,26 @@ class Application(tk.Tk):
         self.bind('<KeyPress-Down>', self.move)
         self.bind('<KeyPress-Left>', self.move)
         self.bind('<KeyPress-Right>', self.move)
+        self.bind('<KeyPress-1>', self.shorten)
+        self.bind('<KeyPress-2>', self.enlarge)
         if set.gameTypeVar is CHANGE_SPEED_GAME:
             self.bind('<KeyPress-F1>', self.increaseSpeed)
             self.bind('<KeyPress-F2>', self.decreaseSpeed)
         else:
             self.unbind('<KeyPress-F1>')
             self.unbind('<KeyPress-F2>')
+
+    def shorten(self, event):
+        print('making smaller')
+        global SIZE_STATE
+        if SIZE_STATE > 0:
+            SIZE_STATE -= 1
+
+    def enlarge(self, event):
+        print('making bigger')
+        global SIZE_STATE
+        if SIZE_STATE < 2:
+            SIZE_STATE += 1
 
     def increaseSpeed(self, event):
         if self.delay < 50:
@@ -210,8 +221,8 @@ class Application(tk.Tk):
                 'actual': 0,
                 'color' : globals()[name + '_COLOR'],
                 'coords': self.get_init_coords(tetromino[SIZE_STATE]),
-                'rows': len(tetromino[0][SIZE_STATE]),
-                'cols': len(tetromino[0][0][SIZE_STATE]),
+                'rows': len(tetromino[SIZE_STATE][0]),
+                'cols': len(tetromino[SIZE_STATE][0][0]),
                 'total_pieces': len(tetromino[SIZE_STATE]),
                 'can_rotate'  : True if len(tetromino[SIZE_STATE]) > 1 else False,
                 'ids': [],
@@ -344,12 +355,9 @@ class Application(tk.Tk):
     def draw_tetromino(self):
         self.del_tetromino()
         piece = self.tetromino['pieces'][SIZE_STATE][self.tetromino['actual']]
-        ptype((piece, 'piece'))
         x0, y0 = self.tetromino['coords']
         for y in range(self.tetromino['rows']):
             for x in range(self.tetromino['cols']):
-                if type(piece[y]) is int:
-                    print('is int....')
                 if piece[y][x] == 1:
                     x1 = (x0 + x) * set.boxSize
                     y1 = (y0 + y) * set.boxSize
