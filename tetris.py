@@ -10,6 +10,7 @@ from os import system
 from conf import Configuration
 from shapes import *
 import settings as set
+from tools import ptype
 
 # ===============================================
 # WINDOW OPTIONS
@@ -44,6 +45,7 @@ NORMAL_GAME = 1
 PAUSED_GAME = 2
 CHANGE_SPEED_GAME = 3
 isPaused = False
+SIZE_STATE = 1
 
 # Levels
 LEVEL_0_DELAY = 1000 # inital delay between steps
@@ -66,6 +68,9 @@ class Application(tk.Tk):
         self.draw_grid()
         self.create_events()
         self.tetrominos = self.get_tetrominos()
+        ptype((self.tetrominos, 'tetrominos'))
+        for i in self.tetrominos:
+            print(i)
         self.board = None
         self.board = self.get_init_board()
         self.next = copy.deepcopy(random.choice(self.tetrominos))
@@ -204,11 +209,11 @@ class Application(tk.Tk):
                 'pieces': tetromino,
                 'actual': 0,
                 'color' : globals()[name + '_COLOR'],
-                'coords': self.get_init_coords(tetromino),
-                'rows': len(tetromino[0]),
-                'cols': len(tetromino[0][0]),
-                'total_pieces': len(tetromino),
-                'can_rotate'  : True if len(tetromino) > 1 else False,
+                'coords': self.get_init_coords(tetromino[SIZE_STATE]),
+                'rows': len(tetromino[0][SIZE_STATE]),
+                'cols': len(tetromino[0][0][SIZE_STATE]),
+                'total_pieces': len(tetromino[SIZE_STATE]),
+                'can_rotate'  : True if len(tetromino[SIZE_STATE]) > 1 else False,
                 'ids': [],
                 }
             tetrominos.append(data)
@@ -338,10 +343,13 @@ class Application(tk.Tk):
 
     def draw_tetromino(self):
         self.del_tetromino()
-        piece = self.tetromino['pieces'][self.tetromino['actual']]
+        piece = self.tetromino['pieces'][SIZE_STATE][self.tetromino['actual']]
+        ptype((piece, 'piece'))
         x0, y0 = self.tetromino['coords']
         for y in range(self.tetromino['rows']):
             for x in range(self.tetromino['cols']):
+                if type(piece[y]) is int:
+                    print('is int....')
                 if piece[y][x] == 1:
                     x1 = (x0 + x) * set.boxSize
                     y1 = (y0 + y) * set.boxSize
@@ -376,7 +384,7 @@ class Application(tk.Tk):
                 self.draw_tetromino()
 
     def can_be_rotated(self, next):
-        piece = self.tetromino['pieces'][next]
+        piece = self.tetromino['pieces'][SIZE_STATE][next]
         board = self.board
         x, y = self.tetromino['coords']
         for y0 in range(self.tetromino['rows']):
@@ -429,7 +437,7 @@ class Application(tk.Tk):
         self.canvas.update()
 
     def can_be_moved(self, direction):
-        piece = self.tetromino['pieces'][self.tetromino['actual']]
+        piece = self.tetromino['pieces'][SIZE_STATE][self.tetromino['actual']]
         board = self.board
         x, y = self.tetromino['coords']
         for y0 in range(self.tetromino['rows']):
