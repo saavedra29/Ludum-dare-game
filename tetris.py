@@ -7,9 +7,7 @@ import tkinter as tk
 from tkinter import messagebox
 from os import getpid
 from os import system
-from conf import Configuration
 from shapes import *
-import settings as set
 from tools import ptype
 
 # ===============================================
@@ -40,6 +38,21 @@ Z_COLOR = 'red'
 COMPLETE_ROW_BG_COLOR = 'white'  # None for inherit
 COMPLETE_ROW_FG_COLOR = None
 # ===============================================
+MENU_BIG_FONTS = 'TkDefaultFont 14'
+
+# settings
+gameTypeVar = 1
+shapeL = True
+shapeO = True
+shapeI = True
+shapeT = True
+shapeS = True
+shapeZ = True
+shapeJ = True
+width = 12
+height = 24
+boxSize = 30
+replay = False
 
 NORMAL_GAME = 1
 PAUSED_GAME = 2
@@ -81,8 +94,8 @@ class Application(tk.Tk):
         top = self.winfo_toplevel()
         top.config(bg=BG_COLOR)
 
-        width = set.width * set.boxSize
-        height = set.height * set.boxSize
+        theWidth = width * boxSize
+        theHeight = height * boxSize
 
         # main menu
         self.menuBar = tk.Menu()
@@ -94,17 +107,7 @@ class Application(tk.Tk):
         self.fileMenu.add_command(label='Exit', command=self.onExit)
 
         # configuration submenu
-        self.confMenu = tk.Menu(self.menuBar, tearoff=False)
-        self.menuBar.add_cascade(label='Configuration', menu=self.confMenu)
-        self.confMenu.add_command(label='Game', command=self.generalConfig)
-
-        # help submenu
-        self.helpMenu = tk.Menu(self.menuBar, tearoff=False)
-        self.menuBar.add_cascade(label='Help', menu=self.helpMenu)
-        self.helpMenu.add_command(label='Instructions',
-                                  command=self.instructions)
-
-        self.canvas = tk.Canvas(self, width=width, height=height,
+        self.canvas = tk.Canvas(self, width=theWidth, height=theHeight,
                                 bg=BOARD_BG_COLOR,
                                 highlightbackground=BOARD_FG_COLOR)
         self.canvas.grid(row=0, column=0, padx=20, pady=20)
@@ -115,26 +118,6 @@ class Application(tk.Tk):
 
     def pause(self, event):
         tk.messagebox.showinfo('Paused', 'Press ok to continue')
-
-    def generalConfig(self):
-        self.configurationWin = Configuration(self)
-
-    def instructions(self):
-        message = "------ Game Modes -------\n\n" \
-                  "NORMAL: Exactly like normal Tetris\n\n" \
-                  "PAUSED: The piece falls only when " \
-                  "the player presses the Down key\n\n" \
-                  "SPEED: The speed of the falling " \
-                  "piece is determined by the player\n\n\n" \
-                  "------- Key Bindings -------\n" \
-                  "Up\t\t=> up arrow\n" \
-                  "Down\t\t=> down arrow\n" \
-                  "Left\t\t=> left arrow\n" \
-                  "Right\t\t=> right arrow\n" \
-                  "Increase speed\t=> F1\n" \
-                  "Decrease speed\t=> F2\n" \
-                  "Pause\t\t=> p\n"
-        tk.messagebox.showinfo('Game Modes', message)
 
     # Exit function
     def onExit(self):
@@ -148,16 +131,16 @@ class Application(tk.Tk):
             system(command)
 
     def draw_grid(self):
-        for i in range(set.width - 1):
-            x = (set.boxSize * i) + set.boxSize
+        for i in range(width - 1):
+            x = (boxSize * i) + boxSize
             y0 = 0
-            y1 = set.boxSize * set.height
+            y1 = boxSize * height
             self.canvas.create_line(x, y0, x, y1,
                                     fill=BOARD_GRID_COLOR)
-        for i in range(set.height - 1):
+        for i in range(height - 1):
             x0 = 0
-            x1 = set.boxSize * set.width
-            y = (set.boxSize * i) + set.boxSize
+            x1 = boxSize * width
+            y = (boxSize * i) + boxSize
             self.canvas.create_line(x0, y, x1, y, fill=BOARD_GRID_COLOR)
 
     def create_events(self):
@@ -168,7 +151,7 @@ class Application(tk.Tk):
         self.bind('<KeyPress-Right>', self.move)
         self.bind('<KeyPress-1>', self.shorten)
         self.bind('<KeyPress-2>', self.enlarge)
-        if set.gameTypeVar is CHANGE_SPEED_GAME:
+        if gameTypeVar is CHANGE_SPEED_GAME:
             self.bind('<KeyPress-F1>', self.increaseSpeed)
             self.bind('<KeyPress-F2>', self.decreaseSpeed)
         else:
@@ -207,8 +190,8 @@ class Application(tk.Tk):
 
     def get_tetrominos(self):
         tetrominos = []
-        s = [set.shapeI, set.shapeO, set.shapeT, set.shapeL,
-             set.shapeJ, set.shapeS, set.shapeZ]
+        s = [shapeI, shapeO, shapeT, shapeL,
+             shapeJ, shapeS, shapeZ]
         shapes = 'IOTLJSZ'
         usedShapes = []
         for i in range(len(shapes)):
@@ -238,14 +221,14 @@ class Application(tk.Tk):
         return tetrominos
 
     def get_init_coords(self, tetromino):
-            return int(set.width / 2.0 - len(tetromino[2][0]) / 2.0), 1
+            return int(width / 2.0 - len(tetromino[2][0]) / 2.0), 1
 
     def get_init_board(self):
         if getattr(self, 'board', None) is None:
-            self.board = [[0] * set.width for _ in range(set.height)]
+            self.board = [[0] * width for _ in range(height)]
         else:
-            for y in range(set.height):
-                for x in range(set.width):
+            for y in range(height):
+                for x in range(width):
                     if self.board[y][x]:
                         self.canvas.delete(self.board[y][x])
                         self.board[y][x] = 0
@@ -262,16 +245,9 @@ class Application(tk.Tk):
                 self.job_id = self.canvas.after(100, self.step)
                 return
 
-        if self.configurationWin is not None and \
-                self.configurationWin.winfo_exists():
-            if not set.replay:
-                self.job_id = self.canvas.after(100, self.step)
-            else:
-                set.replay = False
-                pass
         else:
             if self.tetromino and self.can_be_moved('Down'):
-                if set.gameTypeVar is not PAUSED_GAME:
+                if gameTypeVar is not PAUSED_GAME:
                     self.move_tetromino((0, 1))
                     self.job_id = self.canvas.after(self.delay, self.step)
             else:
@@ -294,7 +270,7 @@ class Application(tk.Tk):
 
     def check_status(self):
         rows = []
-        for row in range(set.height):
+        for row in range(height):
             if 0 not in self.board[row]:
                 rows.append(row)
         if rows:
@@ -313,10 +289,10 @@ class Application(tk.Tk):
             for id in self.board[row]:
                 self.canvas.delete(id)
             del self.board[row]
-            self.board.insert(0, [0] * set.width)
+            self.board.insert(0, [0] * width)
             for row0 in range(row + 1):
                 for id0 in self.board[row0]:
-                    self.canvas.move(id0, 0, set.boxSize)
+                    self.canvas.move(id0, 0, boxSize)
         self.canvas.update()
 
     def set_score(self, rows):
@@ -324,16 +300,16 @@ class Application(tk.Tk):
         self.status['rows'] += len(rows)
         if self.status['rows'] % ROWS_BY_LEVEL == 0:
             self.status['level'] += 1
-            if set.gameTypeVar is not CHANGE_SPEED_GAME:
+            if gameTypeVar is not CHANGE_SPEED_GAME:
                 if self.delay > 100:
                     self.delay -= 100
         self.status['score'] += points
         self.update_label_status()
 
     def update_label_status(self):
-        if set.gameTypeVar == NORMAL_GAME:
+        if gameTypeVar == NORMAL_GAME:
             type = 'Normal'
-        elif set.gameTypeVar == PAUSED_GAME:
+        elif gameTypeVar == PAUSED_GAME:
             type = 'Paused'
         else:
             type = 'Speed'
@@ -367,10 +343,10 @@ class Application(tk.Tk):
         for y in range(self.tetromino['rows'][SIZE_STATE]):
             for x in range(self.tetromino['cols'][SIZE_STATE]):
                 if piece[y][x] == 1:
-                    x1 = (x0 + x) * set.boxSize
-                    y1 = (y0 + y) * set.boxSize
-                    x2 = x1 + set.boxSize
-                    y2 = y1 + set.boxSize
+                    x1 = (x0 + x) * boxSize
+                    y1 = (y0 + y) * boxSize
+                    x2 = x1 + boxSize
+                    y2 = y1 + boxSize
                     id = self.canvas.create_rectangle(
                         x1, y1, x2, y2, width=TETROMINO_BORDER_WIDTH,
                         outline=TETROMINO_FG_COLOR,
@@ -394,8 +370,8 @@ class Application(tk.Tk):
 
     def del_tetromino(self):
         if self.tetromino['ids']:
-            for y in range(set.height):
-                for x in range(set.width):
+            for y in range(height):
+                for x in range(width):
                     if self.board[y][x] in self.tetromino['ids']:
                         self.board[y][x] = 0
             for id in self.tetromino['ids']:
@@ -421,9 +397,9 @@ class Application(tk.Tk):
                 if piece[y0][x0] == 1:
                     if x == -1 and x0 == 1:
                         return False
-                    if x + x0 >= set.width:
+                    if x + x0 >= width:
                         return False
-                    if y + y0 >= set.height:
+                    if y + y0 >= height:
                         return False
                     x1 = x + x0
                     y1 = y + y0
@@ -447,9 +423,9 @@ class Application(tk.Tk):
     def move_tetromino(self, offset):
         x, y = offset
         ranges = {
-            (-1, 0): ((0, set.width, 1), (0, set.height, 1)),
-            (1, 0): ((set.width - 1, -1, -1), (0, set.height, 1)),
-            (0, 1): ((0, set.width, 1), (set.height - 1, -1, -1))
+            (-1, 0): ((0, width, 1), (0, height, 1)),
+            (1, 0): ((width - 1, -1, -1), (0, height, 1)),
+            (0, 1): ((0, width, 1), (height - 1, -1, -1))
         }
 
         x_start_stop_step, y_start_stop_step = ranges[offset]
@@ -459,7 +435,7 @@ class Application(tk.Tk):
                 if id in self.tetromino['ids']:
                     self.board[y0 + y][x0 + x] = self.board[y0][x0]
                     self.board[y0][x0] = 0
-                    self.canvas.move(id, x * set.boxSize, y * set.boxSize)
+                    self.canvas.move(id, x * boxSize, y * boxSize)
 
         x1, y1 = self.tetromino['coords']
         self.tetromino['coords'] = (x1 + x, y1 + y)
@@ -482,14 +458,14 @@ class Application(tk.Tk):
                     if direction == 'Right':
                         x1 = x + x0 + 1
                         y1 = y + y0
-                        if x1 >= set.width or (board[y1][x1] and
+                        if x1 >= width or (board[y1][x1] and
                                                        board[y1][x1] not in
                                                        self.tetromino['ids']):
                             return False
                     if direction == 'Down':
                         x1 = x + x0
                         y1 = y + y0 + 1
-                        if y1 >= set.height or (board[y1][x1] and
+                        if y1 >= height or (board[y1][x1] and
                                                         board[y1][x1] not in
                                                         self.tetromino['ids']):
                             return False
