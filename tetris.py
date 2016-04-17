@@ -176,14 +176,12 @@ class Application(tk.Tk):
             self.unbind('<KeyPress-F2>')
 
     def shorten(self, event):
-        print('making smaller')
         global SIZE_STATE
         if SIZE_STATE > 0:
             SIZE_STATE -= 1
         self.draw_tetromino()
 
     def enlarge(self, event):
-        print('making bigger')
         global SIZE_STATE
         if SIZE_STATE < 2:
             SIZE_STATE += 1
@@ -234,10 +232,7 @@ class Application(tk.Tk):
         return tetrominos
 
     def get_init_coords(self, tetromino):
-        t = []
-        for i in range(3):
-            t.append((int(set.width / 2.0 - len(tetromino[i][0]) / 2.0), 1))
-        return t
+            return int(set.width / 2.0 - len(tetromino[2][0]) / 2.0), 1
 
     def get_init_board(self):
         if getattr(self, 'board', None) is None:
@@ -348,7 +343,7 @@ class Application(tk.Tk):
         self.lb_status.config(text='\n'.join(lines))
 
     def is_gameover(self, next):
-        x, y = next['coords'][SIZE_STATE]
+        x, y = next['coords']
         for y0 in range(next['rows'][SIZE_STATE]):
             for x0 in range(next['cols'][SIZE_STATE]):
                 x1 = x0 + x
@@ -362,7 +357,7 @@ class Application(tk.Tk):
     def draw_tetromino(self):
         self.del_tetromino()
         piece = self.tetromino['pieces'][SIZE_STATE][self.tetromino['actual']]
-        x0, y0 = self.tetromino['coords'][SIZE_STATE]
+        x0, y0 = self.tetromino['coords']
         for y in range(self.tetromino['rows'][SIZE_STATE]):
             for x in range(self.tetromino['cols'][SIZE_STATE]):
                 if piece[y][x] == 1:
@@ -401,7 +396,7 @@ class Application(tk.Tk):
     def can_be_rotated(self, next):
         piece = self.tetromino['pieces'][SIZE_STATE][next]
         board = self.board
-        x, y = self.tetromino['coords'][SIZE_STATE]
+        x, y = self.tetromino['coords']
         for y0 in range(self.tetromino['rows'][SIZE_STATE]):
             for x0 in range(self.tetromino['cols'][SIZE_STATE]):
                 if piece[y0][x0] == 1:
@@ -420,7 +415,7 @@ class Application(tk.Tk):
 
     def move(self, event):
         if self.running and self.can_be_moved(event.keysym):
-            x, y = self.tetromino['coords'][SIZE_STATE]
+            x, y = self.tetromino['coords']
             if event.keysym == 'Left':
                 self.move_tetromino((-1, 0))
             if event.keysym == 'Right':
@@ -447,14 +442,14 @@ class Application(tk.Tk):
                     self.board[y0][x0] = 0
                     self.canvas.move(id, x * set.boxSize, y * set.boxSize)
 
-        x1, y1 = self.tetromino['coords'][SIZE_STATE]
-        self.tetromino['coords'][SIZE_STATE] = (x1 + x, y1 + y)
+        x1, y1 = self.tetromino['coords']
+        self.tetromino['coords'] = (x1 + x, y1 + y)
         self.canvas.update()
 
     def can_be_moved(self, direction):
         piece = self.tetromino['pieces'][SIZE_STATE][self.tetromino['actual']]
         board = self.board
-        x, y = self.tetromino['coords'][SIZE_STATE]
+        x, y = self.tetromino['coords']
         for y0 in range(self.tetromino['rows'][SIZE_STATE]):
             for x0 in range(self.tetromino['cols'][SIZE_STATE]):
                 if piece[y0][x0] == 1:
