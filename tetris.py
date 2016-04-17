@@ -28,6 +28,7 @@ FONT_COLOR = 'white'
 # Tetrominos
 TETROMINO_FG_COLOR = 'black'
 TETROMINO_BORDER_WIDTH = 2  # in pixels
+Q_COLOR = 'black'
 I_COLOR = 'cyan'
 O_COLOR = 'yellow'
 T_COLOR = 'magenta'
@@ -42,6 +43,7 @@ MENU_BIG_FONTS = 'TkDefaultFont 14'
 
 # settings
 gameTypeVar = 1
+shapeQ = True
 shapeL = True
 shapeO = True
 shapeI = True
@@ -190,9 +192,9 @@ class Application(tk.Tk):
 
     def get_tetrominos(self):
         tetrominos = []
-        s = [shapeI, shapeO, shapeT, shapeL,
+        s = [shapeQ, shapeI, shapeO, shapeT, shapeL,
              shapeJ, shapeS, shapeZ]
-        shapes = 'IOTLJSZ'
+        shapes = 'QIOTLJSZ'
         usedShapes = []
         for i in range(len(shapes)):
             if s[i] == True:
@@ -235,7 +237,7 @@ class Application(tk.Tk):
         return self.board
 
     def get_init_status(self):
-        return {'score': 0, 'rows': 0, 'level': 0,
+        return {'score': 0, 'rows': 0, 'level': 0, 'Q': 0,
                 'O': 0, 'I': 0, 'S': 0, 'T': 0, 'Z': 0, 'L': 0, 'J': 0,
                 'total': 0, 'next': ''}
 
