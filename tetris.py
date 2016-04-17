@@ -179,13 +179,19 @@ class Application(tk.Tk):
         global SIZE_STATE
         if SIZE_STATE > 0:
             SIZE_STATE -= 1
-        self.draw_tetromino()
+            if self.checkOutOfBounds():
+                SIZE_STATE += 1
+            else:
+                self.draw_tetromino()
 
     def enlarge(self, event):
         global SIZE_STATE
         if SIZE_STATE < 2:
             SIZE_STATE += 1
-        self.draw_tetromino()
+            if self.checkOutOfBounds():
+                SIZE_STATE -= 1
+            else:
+                self.draw_tetromino()
 
     def increaseSpeed(self, event):
         if self.delay < 50:
@@ -372,6 +378,19 @@ class Application(tk.Tk):
                     self.tetromino['ids'].append(id)
                     self.board[y0 + y][x0 + x] = id
         self.canvas.update()
+
+    def checkOutOfBounds(self):
+        x0, y0 = self.tetromino['coords']
+        for y in range(self.tetromino['rows'][SIZE_STATE]):
+            for x in range(self.tetromino['cols'][SIZE_STATE]):
+                r = y0 + y
+                c = x0 + x
+                if not 0 <= r < len(self.board):
+                    return True
+                if not 0 <= c < len(self.board[r]):
+                    return True
+        return False
+
 
     def del_tetromino(self):
         if self.tetromino['ids']:
