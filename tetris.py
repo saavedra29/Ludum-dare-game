@@ -188,7 +188,7 @@ class Application(tk.Tk):
         global SIZE_STATE
         if SIZE_STATE < 2:
             SIZE_STATE += 1
-            if self.checkOutOfBounds():
+            if self.checkOutOfBounds() or not self.can_be_rotated(self.tetromino['actual']):
                 SIZE_STATE -= 1
             else:
                 self.draw_tetromino()
