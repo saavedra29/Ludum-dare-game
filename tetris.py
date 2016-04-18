@@ -1,14 +1,12 @@
-import time
-import random
 import copy
 import platform
-
 import tkinter as tk
 from tkinter import messagebox
 from os import getpid
 from os import system
 from shapes import *
-from tools import ptype
+import random
+import time
 
 # ===============================================
 # WINDOW OPTIONS
@@ -39,10 +37,8 @@ Z_COLOR = 'red'
 COMPLETE_ROW_BG_COLOR = 'white'  # None for inherit
 COMPLETE_ROW_FG_COLOR = None
 # ===============================================
-MENU_BIG_FONTS = 'TkDefaultFont 14'
 
 # settings
-gameTypeVar = 1
 shapeQ = True
 shapeL = True
 shapeO = True
@@ -54,13 +50,10 @@ shapeJ = True
 width = 12
 height = 24
 boxSize = 30
-replay = False
 
-NORMAL_GAME = 1
-PAUSED_GAME = 2
-CHANGE_SPEED_GAME = 3
-isPaused = False
 SIZE_STATE = 2
+changing = False
+nextTime = 0
 
 # Levels
 LEVEL_0_DELAY = 1000  # inital delay between steps
@@ -99,16 +92,6 @@ class Application(tk.Tk):
         theWidth = width * boxSize
         theHeight = height * boxSize
 
-        # main menu
-        self.menuBar = tk.Menu()
-        self.config(menu=self.menuBar)
-
-        # file submenu
-        self.fileMenu = tk.Menu(self.menuBar, tearoff=False)
-        self.menuBar.add_cascade(label='File', menu=self.fileMenu)
-        self.fileMenu.add_command(label='Exit', command=self.onExit)
-
-        # configuration submenu
         self.canvas = tk.Canvas(self, width=theWidth, height=theHeight,
                                 bg=BOARD_BG_COLOR,
                                 highlightbackground=BOARD_FG_COLOR)
@@ -120,6 +103,21 @@ class Application(tk.Tk):
 
     def pause(self, event):
         tk.messagebox.showinfo('Paused', 'Press ok to continue')
+
+    def checkChange(self):
+        global nextTime
+        global changing
+        if int(time.time()) > nextTime:
+            interval = random.randrange(3, 12)
+            nextTime = interval + int(time.time())
+            if changing == False:
+                self.bind('<KeyPress-1>', self.shorten)
+                self.bind('<KeyPress-2>', self.enlarge)
+                changing = True
+            else:
+                self.unbind('<KeyPress-1>')
+                self.unbind('<KeyPress-2>')
+                changing = False
 
     # Exit function
     def onExit(self):
@@ -151,14 +149,6 @@ class Application(tk.Tk):
         self.bind('<KeyPress-Down>', self.move)
         self.bind('<KeyPress-Left>', self.move)
         self.bind('<KeyPress-Right>', self.move)
-        self.bind('<KeyPress-1>', self.shorten)
-        self.bind('<KeyPress-2>', self.enlarge)
-        if gameTypeVar is CHANGE_SPEED_GAME:
-            self.bind('<KeyPress-F1>', self.increaseSpeed)
-            self.bind('<KeyPress-F2>', self.decreaseSpeed)
-        else:
-            self.unbind('<KeyPress-F1>')
-            self.unbind('<KeyPress-F2>')
 
     def shorten(self, event):
         global SIZE_STATE
@@ -242,15 +232,10 @@ class Application(tk.Tk):
                 'total': 0, 'next': ''}
 
     def step(self):
-        for child in self.winfo_children():
-            if child.__dict__['widgetName'] == 'frame':
-                self.job_id = self.canvas.after(100, self.step)
-                return
-
+        self.checkChange()
         if self.tetromino and self.can_be_moved('Down'):
-            if gameTypeVar is not PAUSED_GAME:
-                self.move_tetromino((0, 1))
-                self.job_id = self.canvas.after(self.delay, self.step)
+            self.move_tetromino((0, 1))
+            self.job_id = self.canvas.after(self.delay, self.step)
         else:
             self.check_status()
             if self.is_gameover(self.next):
@@ -301,23 +286,15 @@ class Application(tk.Tk):
         self.status['rows'] += len(rows)
         if self.status['rows'] % ROWS_BY_LEVEL == 0:
             self.status['level'] += 1
-            if gameTypeVar is not CHANGE_SPEED_GAME:
-                if self.delay > 100:
-                    self.delay -= 100
+            if self.delay > 100:
+                self.delay -= 100
         self.status['score'] += points
         self.update_label_status()
 
     def update_label_status(self):
-        if gameTypeVar == NORMAL_GAME:
-            type = 'Normal'
-        elif gameTypeVar == PAUSED_GAME:
-            type = 'Paused'
-        else:
-            type = 'Speed'
         lines = [
             'Score: %7s' % self.status['score'],
             '',
-            'Mode : %7s' % type,
             'Level: %7s' % self.status['level'],
             'Rows : %7s' % self.status['rows'],
             '',
