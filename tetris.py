@@ -47,8 +47,8 @@ shapeT = True
 shapeS = True
 shapeZ = True
 shapeJ = True
-width = 12
-height = 24
+width = 17
+height = 17
 boxSize = 30
 
 SIZE_STATE = 0
