@@ -7,26 +7,26 @@ from os import system
 from shapes import *
 import random
 import time
+import simpleaudio as sa
 
 # ===============================================
 # WINDOW OPTIONS
 # ===============================================
-BG_COLOR = 'gray'
+BG_COLOR = '#4863A0'
 
 # Board
-BOARD_BG_COLOR = 'lightgray'
+BOARD_BG_COLOR = '#BCC6CC'
 BOARD_FG_COLOR = 'white'
 BOARD_GRID_COLOR = '#333'
 MENU_FONTS = 'TkDefaultFont 12'
 
 # Status
 FONT_SIZE = 12
-FONT_COLOR = 'white'
+FONT_COLOR = '#3D3C3A'
 
 # Tetrominos
 TETROMINO_FG_COLOR = 'black'
-TETROMINO_BORDER_WIDTH = 2  # in pixels
-Q_COLOR = 'black'
+TETROMINO_BORDER_WIDTH = 2 # in pixels
 I_COLOR = 'cyan'
 O_COLOR = 'yellow'
 T_COLOR = 'magenta'
@@ -34,7 +34,8 @@ J_COLOR = 'blue'
 L_COLOR = 'orange'
 S_COLOR = 'green'
 Z_COLOR = 'red'
-COMPLETE_ROW_BG_COLOR = 'white'  # None for inherit
+Q_COLOR = '#3090C7'  # Blue Ivy
+COMPLETE_ROW_BG_COLOR = 'white' # None for inherit
 COMPLETE_ROW_FG_COLOR = None
 # ===============================================
 
@@ -71,6 +72,9 @@ class Application(tk.Tk):
         self.imageGreenPath = 'images/green.png'
         self.orangeImg = tk.PhotoImage(file=self.imageOrangePath)
         self.greenImg = tk.PhotoImage(file=self.imageGreenPath)
+        # Prepare sounds
+        self.finishLine = sa.WaveObject.from_wave_file("sounds/finishLine.wav")
+        self.finishGame = sa.WaveObject.from_wave_file("sounds/finishGame.wav")
         self.startGame()
 
     def startGame(self):
@@ -242,6 +246,10 @@ class Application(tk.Tk):
                 'total': 0, 'next': ''}
 
     def step(self):
+        for child in self.winfo_children():
+            if child.__dict__['widgetName'] == 'frame':
+                self.job_id = self.canvas.after(100, self.step)
+                return
         global SIZE_STATE
         self.checkChange()
         if self.tetromino and self.can_be_moved('Down'):
@@ -250,6 +258,7 @@ class Application(tk.Tk):
         else:
             self.check_status()
             if self.is_gameover(self.next):
+                self.finishGame.play()
                 title = 'Game Over'
                 message = 'Your score: %d' % self.status['score']
                 messagebox.showinfo(title, message)
@@ -275,6 +284,7 @@ class Application(tk.Tk):
             if 0 not in self.board[row]:
                 rows.append(row)
         if rows:
+            self.finishLine.play()
             self.del_rows(rows)
             self.set_score(rows)
 
@@ -318,6 +328,7 @@ class Application(tk.Tk):
         self.lb_status.config(text='\n'.join(lines))
 
     def is_gameover(self, next):
+
         x, y = next['coords']
         for y0 in range(next['rows'][SIZE_STATE]):
             for x0 in range(next['cols'][SIZE_STATE]):
