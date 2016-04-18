@@ -51,7 +51,7 @@ width = 12
 height = 24
 boxSize = 30
 
-SIZE_STATE = 1
+SIZE_STATE = 0
 changing = False
 nextTime = 0
 
@@ -216,6 +216,7 @@ class Application(tk.Tk):
                                 len(tetromino[1]),
                                 len(tetromino[2])),
                 'can_rotate': True, # if name is not 'O' else False,
+                'normal_shape': tetromino[3],
                 'ids': [],
             }
             tetrominos.append(data)
@@ -241,6 +242,7 @@ class Application(tk.Tk):
                 'total': 0, 'next': ''}
 
     def step(self):
+        global SIZE_STATE
         self.checkChange()
         if self.tetromino and self.can_be_moved('Down'):
             self.move_tetromino((0, 1))
@@ -251,9 +253,13 @@ class Application(tk.Tk):
                 title = 'Game Over'
                 message = 'Your score: %d' % self.status['score']
                 messagebox.showinfo(title, message)
+                self.canvas.destroy()
+                self.changeSizeIndicatorLabel.destroy()
+                self.lb_status.destroy()
                 self.startGame()
             else:
                 self.tetromino = self.next
+                SIZE_STATE = self.tetromino['normal_shape']
                 self.next = copy.deepcopy(random.choice(self.tetrominos))
                 self.status[self.tetromino['name']] += 1
                 self.status['total'] += 1
