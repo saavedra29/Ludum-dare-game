@@ -51,7 +51,7 @@ width = 12
 height = 24
 boxSize = 30
 
-SIZE_STATE = 2
+SIZE_STATE = 1
 changing = False
 nextTime = 0
 
@@ -67,6 +67,10 @@ class Application(tk.Tk):
         self.title('Tetris')
         self.option_add('*Font', MENU_FONTS)
         self.configurationWin = None
+        self.imageOrangePath = 'images/orange.png'
+        self.imageGreenPath = 'images/green.png'
+        self.orangeImg = tk.PhotoImage(file=self.imageOrangePath)
+        self.greenImg = tk.PhotoImage(file=self.imageGreenPath)
         self.startGame()
 
     def startGame(self):
@@ -95,11 +99,14 @@ class Application(tk.Tk):
         self.canvas = tk.Canvas(self, width=theWidth, height=theHeight,
                                 bg=BOARD_BG_COLOR,
                                 highlightbackground=BOARD_FG_COLOR)
-        self.canvas.grid(row=0, column=0, padx=20, pady=20)
+        self.canvas.pack(side=tk.LEFT, padx=20, pady=20)
 
         lb_status = self.lb_status = tk.Label(
             self, bg=BG_COLOR, fg=FONT_COLOR, font=('monospace', FONT_SIZE))
-        lb_status.grid(row=0, column=1, padx=(0, 20), pady=20, sticky=tk.N)
+        lb_status.pack(padx=(0, 20), pady=20)
+
+        self.changeSizeIndicatorLabel = tk.Label(self, image=self.orangeImg)
+        self.changeSizeIndicatorLabel.pack()
 
     def pause(self, event):
         tk.messagebox.showinfo('Paused', 'Press ok to continue')
@@ -113,10 +120,12 @@ class Application(tk.Tk):
             if changing == False:
                 self.bind('<KeyPress-1>', self.shorten)
                 self.bind('<KeyPress-2>', self.enlarge)
+                self.changeSizeIndicatorLabel.config(image=self.greenImg)
                 changing = True
             else:
                 self.unbind('<KeyPress-1>')
                 self.unbind('<KeyPress-2>')
+                self.changeSizeIndicatorLabel.config(image=self.orangeImg)
                 changing = False
 
     # Exit function
