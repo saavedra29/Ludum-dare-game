@@ -247,28 +247,27 @@ class Application(tk.Tk):
                 self.job_id = self.canvas.after(100, self.step)
                 return
 
+        if self.tetromino and self.can_be_moved('Down'):
+            if gameTypeVar is not PAUSED_GAME:
+                self.move_tetromino((0, 1))
+                self.job_id = self.canvas.after(self.delay, self.step)
         else:
-            if self.tetromino and self.can_be_moved('Down'):
-                if gameTypeVar is not PAUSED_GAME:
-                    self.move_tetromino((0, 1))
-                    self.job_id = self.canvas.after(self.delay, self.step)
+            self.check_status()
+            if self.is_gameover(self.next):
+                title = 'Game Over'
+                message = 'Your score: %d' % self.status['score']
+                messagebox.showinfo(title, message)
+                self.startGame()
             else:
-                self.check_status()
-                if self.is_gameover(self.next):
-                    title = 'Game Over'
-                    message = 'Your score: %d' % self.status['score']
-                    messagebox.showinfo(title, message)
-                    self.startGame()
-                else:
-                    self.tetromino = self.next
-                    self.next = copy.deepcopy(random.choice(self.tetrominos))
-                    self.status[self.tetromino['name']] += 1
-                    self.status['total'] += 1
-                    self.status['next'] = self.next['name']
-                    self.update_label_status()
-                    self.draw_tetromino()
+                self.tetromino = self.next
+                self.next = copy.deepcopy(random.choice(self.tetrominos))
+                self.status[self.tetromino['name']] += 1
+                self.status['total'] += 1
+                self.status['next'] = self.next['name']
+                self.update_label_status()
+                self.draw_tetromino()
 
-                    self.job_id = self.canvas.after(self.delay, self.step)
+                self.job_id = self.canvas.after(self.delay, self.step)
 
     def check_status(self):
         rows = []
