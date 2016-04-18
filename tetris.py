@@ -22,7 +22,8 @@ MENU_FONTS = 'TkDefaultFont 12'
 
 # Status
 FONT_SIZE = 12
-FONT_COLOR = '#3D3C3A'
+# FONT_COLOR = '#3D3C3A'
+FONT_COLOR = '#FFFFFF'
 
 # Tetrominos
 TETROMINO_FG_COLOR = 'black'
@@ -65,7 +66,7 @@ POINTS = [40, 100, 300, 1200]  # 1 , 2, 3, Tetris
 class Application(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
-        self.title('Tetris')
+        self.title('Qtetris')
         self.option_add('*Font', MENU_FONTS)
         self.configurationWin = None
         self.imageOrangePath = 'images/orange.png'
